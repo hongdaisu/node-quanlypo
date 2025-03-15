@@ -1,0 +1,29 @@
+version: '3.8'
+services:
+  db:
+    image: mysql:8.0
+    restart: always
+    environment:
+      - MYSQL_DATABASE=qlpo
+      - MYSQL_ROOT_PASSWORD=yes
+      - MYSQL_ROOT_HOST=%
+    ports:
+      - '3307:3306'
+    # expose:
+    #   - 3306
+
+  backend:
+    build:
+      context: ../../NODEJS
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    environment:
+      - DB_HOST_MYSQL=db
+      - DB_PORT_MYSQL=3306
+      # - DB_USER_MYSQL=root
+      # - DB_PASSWORD_MYSQL=yes
+      # DB_HOST_MYSQL=host.docker.internal
+    ports:
+      - 8086:8086
+    depends_on:
+      - db
