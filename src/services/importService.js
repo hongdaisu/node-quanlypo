@@ -115,7 +115,7 @@ let xacNhanThemTaiSan = (KhoTaiSan_Id, tenTaiSan, nhapTenTaiSan, KhoQuanLy, User
     return new Promise(async (resolve, reject) => {
         try {
             const NgayTao = new Date();
-            const NamKiemKe = NgayTao.getFullYear();
+            //const NamKiemKe = NgayTao.getFullYear();
             if (!tenTaiSan && !nhapTenTaiSan) {
                 //console.log('check', KhoTaiSan_Id, tenTaiSan, nhapTenTaiSan, KhoQuanLy)
                 resolve({
@@ -124,23 +124,27 @@ let xacNhanThemTaiSan = (KhoTaiSan_Id, tenTaiSan, nhapTenTaiSan, KhoQuanLy, User
                 })
             } else {
 
-                let checklankiem = await db.sequelize.query('CALL sp_checklan_kiemke(:KhoTaiSan_Id,:KhoQuanLy,:NamKiemKe)',
+                //let checklankiem = await db.sequelize.query('CALL sp_checklan_kiemke(:KhoTaiSan_Id,:KhoQuanLy,:NamKiemKe)',
+                let checklankiem = await db.sequelize.query('CALL sp_checklan_kiemke(:KhoTaiSan_Id,:KhoQuanLy,:DotKiemKe_Id)',
                     {
                         replacements: {
                             KhoTaiSan_Id: KhoTaiSan_Id,
                             KhoQuanLy: KhoQuanLy,
-                            NamKiemKe: NamKiemKe
+                            DotKiemKe_Id: DotKiemKe_Id
+                            //NamKiemKe: NamKiemKe
                         },
                         raw: false
                     }
                 );
                 const LanKiemKe = checklankiem[0]?.LanKiemKe;
+                const NamKiemKe = checklankiem[0]?.NamKiemKe;
+                //console.log('checklankiem', checklankiem, DotKiemKe_Id, LanKiemKe, NamKiemKe)
 
                 await db.Data_KiemKe.create({
                     TenTaiSan: tenTaiSan || nhapTenTaiSan,
                     KhoDuoc_Id: KhoTaiSan_Id,
                     KhoaQuanLy: KhoQuanLy,
-                    LanKiemKe: LanKiemKe + 1,
+                    LanKiemKe: LanKiemKe,
                     IsCheckKiemKe: 1,
                     SoLuong: 0,
                     SoLuongThucTe: 1,
@@ -3930,7 +3934,7 @@ let getMaTaiSanKiemKe = (MaTaiSan, KhoTaiSan_Id, KhoQuanLy, UserId, DotKiemKe_Id
         try {
             //console.log('MaTaiSan', MaTaiSan,KhoTaiSan_Id,KhoQuanLy)
             const ngaytao = new Date();
-            const NamKiemKe = ngaytao.getFullYear();
+            //const NamKiemKe = ngaytao.getFullYear();
             const currentTime = new Date();
             let data = await db.sequelize.query('CALL sp_get_data_kiemke_theomataisan(:MaTaiSan,:KhoTaiSan_Id,:KhoQuanLy,:DotKiemKe_Id)',
                 {
@@ -3953,6 +3957,8 @@ let getMaTaiSanKiemKe = (MaTaiSan, KhoTaiSan_Id, KhoQuanLy, UserId, DotKiemKe_Id
                 }
             );
             const KhoaPhongHienTaiNew = check_khoaphonghientai[0]?.KhoaPhongSuDung;
+
+            const NamKiemKe = check_khoaphonghientai[0]?.NamKiemKe;
 
             //console.log('data', MaTaiSan, KhoTaiSan_Id, KhoQuanLy, DotKiemKe_Id)
             //console.log('data.length', data.length)
@@ -4034,7 +4040,7 @@ let getMaTaiSanKiemKe = (MaTaiSan, KhoTaiSan_Id, KhoQuanLy, UserId, DotKiemKe_Id
                     if (check_dotkiemke.length > 0) {
                         //console.log('check_dotkiemke.length', check_dotkiemke.length)
                         const ngaytao = new Date();
-                        const NamKiemKe = ngaytao.getFullYear();
+                        //const NamKiemKe = ngaytao.getFullYear();
                         const request = db.sqlhis2Connection.request();
                         request.input('MaTaiSan', mssql.NVarChar(50), MaTaiSan);
                         request.input('KhoQuanLy', mssql.NVarChar(50), KhoQuanLy);
@@ -4233,7 +4239,7 @@ let getSerialKiemKe = (Serial, KhoTaiSan_Id, KhoQuanLy, UserId, DotKiemKe_Id, Kh
             //console.log('MaTaiSan', Serial, KhoTaiSan_Id, KhoQuanLy, UserId, DotKiemKe_Id)
             const currentTime = new Date();
             const currentYear = currentTime.getFullYear();
-            const NamKiemKe = currentTime.getFullYear();
+            //const NamKiemKe = currentTime.getFullYear();
             let data = await db.sequelize.query('CALL sp_get_data_kiemke_theoserial(:Serial,:KhoTaiSan_Id,:KhoQuanLy,:DotKiemKe_Id)',
                 {
                     replacements: {
@@ -4254,6 +4260,7 @@ let getSerialKiemKe = (Serial, KhoTaiSan_Id, KhoQuanLy, UserId, DotKiemKe_Id, Kh
                 }
             );
             const KhoaPhongHienTaiNew = check_khoaphonghientai[0]?.KhoaPhongSuDung;
+            const NamKiemKe = check_khoaphonghientai[0]?.NamKiemKe;
             //console.log('data.length', data.length)
             if (data.length > 0) {
                 const LanKiemKe = data[0]?.LanKiemKe;
@@ -4403,7 +4410,7 @@ let getSerialKiemKe = (Serial, KhoTaiSan_Id, KhoQuanLy, UserId, DotKiemKe_Id, Kh
                                             SoLuongThucTe: 1,
                                             ChenhLech: item.SoLuong - item.SoLuong,
                                             NgayKiemKe: currentTime,
-                                            NamKiemKe: currentYear,
+                                            NamKiemKe: NamKiemKe,
                                             LanKiemKe: LanKiemKe == null ? 1 : LanKiemKe + 1,
                                             NguoiTao: UserId,
                                         });
